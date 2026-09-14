@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 const sampleRoutes = [
-  { id: "r1", from: "Secaucus", to: "New York", zones: 2, price: 3.50 },
+  { id: "r1", from: "Sample Origin", to: "Sample Destination", zones: 1, price: 3.50 },
   { id: "r2", from: "Jersey City", to: "New York", zones: 3, price: 4.25 },
   { id: "r3", from: "Newark", to: "New York", zones: 4, price: 5.15 }
 ];
@@ -190,26 +190,43 @@ function ActiveTicket({ ticket, onDone }) {
 
   const minutes = String(Math.floor(seconds / 60)).padStart(2, "0");
   const remainder = String(seconds % 60).padStart(2, "0");
+  const progress = seconds / demoDuration * 100;
 
   if (seconds === 0) return <main className="active-ticket expired">
-    <div className="demo-stamp">DEMO — NOT VALID FOR TRAVEL</div>
+    <div className="demo-ribbon">CLASS DEMO · NOT VALID FOR TRAVEL</div>
     <h1>Ticket Expired</h1>
     <p>This sample ticket can no longer be displayed as active.</p>
     <button onClick={onDone}>Return to Wallet</button>
   </main>;
 
-  return <main className="active-ticket">
-    <div className="moving-background" aria-hidden="true" />
-    <div className="demo-stamp">DEMO — NOT VALID FOR TRAVEL</div>
-    <p className="current-time">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</p>
-    <section className="active-card">
-      <small>SAMPLE BUS TICKET</small>
-      <h1>{ticket.route.zones} Zones</h1>
-      <h2>{ticket.route.from} → {ticket.route.to}</h2>
-      <div className="countdown"><small>Demo expires in</small><strong>{minutes}:{remainder}</strong></div>
-      <div className="non-scannable">CLASS PROJECT<br /><strong>NO VALID BARCODE</strong></div>
-      <p>One Way · {ticket.fare}</p>
+  return <main className="active-ticket reference-layout">
+    <div className="status-row" aria-label="Decorative phone status bar">
+      <strong>{new Date(now).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</strong>
+      <span>Demo Mode</span>
+    </div>
+    <h1 className="active-title">One Way Ticket</h1>
+    <section className="reference-card">
+      <button className="demo-code" type="button" aria-label="Decorative non-scannable demo panel">
+        <span>CLASS PROJECT</span>
+        <strong>DEMO</strong>
+        <span>NOT SCANNABLE</span>
+      </button>
+      <strong className="tap-label">Tap to enlarge</strong>
+      <div className="perforation" />
+      <h2 className="interstate">INTERSTATE</h2>
+      <div className="zone-number">{ticket.route.zones}</div>
+      <h3>ZONE RIDE</h3>
+      <p>{ticket.fare === "Adult" ? "1 Adult" : "1 Child/Senior"}</p>
+      <div className="ticket-bottom">
+        <div className="validation-strip" aria-hidden="true"><span /><span /><span /></div>
+        <div className="progress-track"><span style={{ width: progress + "%" }} /></div>
+        <strong className="expires">Expires in {minutes}:{remainder}</strong>
+        <button className="instructions" type="button" onClick={() => alert("Class demonstration only. No onboard validation is available.")}>
+          View Demo Instructions
+        </button>
+      </div>
     </section>
+    <div className="demo-ribbon">CLASS DEMO · NOT VALID FOR TRAVEL</div>
     <button className="close-active" onClick={onDone}>Close Demo</button>
   </main>;
 }
