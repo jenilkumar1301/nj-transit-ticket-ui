@@ -1,160 +1,101 @@
 import { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 
-const initialTickets = [
-  { id: 1, zones: 1, passengers: "1 Adult" },
-  { id: 2, zones: 5, passengers: "1 Adult" },
-  { id: 3, zones: 7, passengers: "1 Adult" },
-  { id: 4, zones: 9, passengers: "2 Adults" },
-  { id: 5, zones: 9, passengers: "5 Adults" }
-];
+const tickets = Array.from({ length: 9 }, (_, index) => ({
+  id: index + 1,
+  zones: index + 1,
+  passengers: index < 4 ? "1 Adult" : `${index - 2} Adults`
+}));
 
-const defaults = {
-  frame: "#086cf2",
-  strip1: "#c65b3e",
-  strip2: "#26261d",
-  strip3: "#3f424d"
-};
+const defaultColors = { frame: "#309832", strip1: "#a8f29d", strip2: "#d8a7dc", strip3: "#b8caf0" };
 
-function readColors() {
-  try {
-    return { ...defaults, ...JSON.parse(localStorage.getItem("ticketDemoColors") || "{}") };
-  } catch {
-    return defaults;
-  }
+function storedColors() {
+  try { return { ...defaultColors, ...JSON.parse(localStorage.getItem("demoTicketColors") || "{}") }; }
+  catch { return defaultColors; }
 }
 
-function useHold(onHold, onTap) {
-  const timer = useRef();
-  const held = useRef(false);
-
-  function start(event) {
+function useLongPress(onLongPress, onClick) {
+  const timer = useRef(null);
+  const didLongPress = useRef(false);
+  const start = event => {
+    didLongPress.current = false;
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    held.current = false;
-    timer.current = window.setTimeout(() => {
-      held.current = true;
-      onHold();
-    }, 550);
-  }
-
-  function cancel() {
-    window.clearTimeout(timer.current);
-  }
-
-  function finish() {
-    cancel();
-    if (!held.current) onTap?.();
-  }
-
-  return {
-    onPointerDown: start,
-    onPointerUp: finish,
-    onPointerCancel: cancel,
-    onContextMenu: event => event.preventDefault()
+    timer.current = window.setTimeout(() => { didLongPress.current = true; onLongPress(); }, 500);
   };
+  const clear = () => window.clearTimeout(timer.current);
+  const finish = () => { clear(); if (!didLongPress.current) onClick?.(); };
+  return { onPointerDown: start, onPointerUp: finish, onPointerCancel: clear, onPointerLeave: clear,
+    onContextMenu: event => event.preventDefault() };
 }
 
-function ColorEditor({ label, value, onChange, onClose }) {
-  return <div className="editor-backdrop" role="dialog" aria-modal="true" aria-labelledby="color-title">
-    <section className="editor-panel">
-      <h2 id="color-title">Choose {label}</h2>
-      <input className="visible-color-picker" type="color" value={value}
-        onChange={event => onChange(event.target.value)} />
-      <code>{value.toUpperCase()}</code>
-      <div className="preset-colors">
-        {["#086CF2", "#FF3341", "#08A05C", "#FFB000", "#6F42C1", "#111111", "#FFFFFF"].map(color =>
-          <button key={color} aria-label={"Select " + color} style={{ background: color }}
-            onClick={() => onChange(color)} />
-        )}
-      </div>
-      <button className="done-button" onClick={onClose}>Done</button>
+function ColorSheet({ name, value, onChange, onClose }) {
+  const presets = ["#309832", "#086cf2", "#ff3341", "#ffb000", "#6f42c1", "#111111", "#ffffff"];
+  return <div className="overlay" role="dialog" aria-modal="true">
+    <section className="sheet">
+      <div className="sheet-head"><h2>{name}</h2><button onClick={onClose}>Done</button></div>
+      <input className="color-picker" type="color" value={value} onChange={e => onChange(e.target.value)} />
+      <output>{value.toUpperCase()}</output>
+      <div className="presets">{presets.map(color => <button key={color} style={{ background: color }}
+        aria-label={`Use ${color}`} onClick={() => onChange(color)} />)}</div>
     </section>
   </div>;
 }
 
-function ZoneEditor({ value, onChange, onClose }) {
-  return <div className="editor-backdrop" role="dialog" aria-modal="true" aria-labelledby="zone-title">
-    <section className="editor-panel">
-      <h2 id="zone-title">Select zones</h2>
-      <div className="zone-grid">
-        {Array.from({ length: 9 }, (_, index) => index + 1).map(zone =>
-          <button key={zone} className={zone === value ? "selected-zone" : ""}
-            onClick={() => { onChange(zone); onClose(); }}>{zone}</button>
-        )}
-      </div>
-      <button className="done-button secondary" onClick={onClose}>Cancel</button>
+function ZoneSheet({ active, onChoose, onClose }) {
+  return <div className="overlay" role="dialog" aria-modal="true">
+    <section className="sheet">
+      <div className="sheet-head"><h2>Select zone</h2><button onClick={onClose}>Close</button></div>
+      <div className="zone-grid">{tickets.map(ticket => <button key={ticket.zones}
+        className={ticket.zones === active ? "active" : ""} onClick={() => onChoose(ticket.zones)}>
+        {ticket.zones}
+      </button>)}</div>
     </section>
   </div>;
 }
 
-function DemoQr({ frame, onEdit }) {
+function DemoQR({ color, onEdit }) {
   const [large, setLarge] = useState(false);
-  const hold = useHold(onEdit, () => setLarge(true));
-  const payload = [
-    "CLASS PROJECT DEMONSTRATION",
-    "NOT VALID FOR TRAVEL",
-    "NO FARE VALUE",
-    "STUDENT UI PROTOTYPE",
-    "IDENTIFIER: DEMO-NJT-2026-000000",
-    "VALIDATOR RESULT: REJECT"
-  ].join("|");
-
-  const qr = <QRCodeSVG value={payload} size={large ? 310 : 205} level="H" marginSize={1}
-    title="Class project demonstration QR code" />;
-
+  const actions = useLongPress(onEdit, () => setLarge(true));
+  const value = "STUDENT UI DEMO | NOT VALID FOR TRAVEL | NO FARE VALUE | VALIDATOR: REJECT | DEMO-2026";
+  const qr = size => <QRCodeSVG value={value} size={size} level="H" marginSize={1} title="Non-valid demo QR" />;
   return <>
-    <button className="qr-frame" style={{ borderColor: frame }} {...hold}
-      aria-label="Tap to enlarge. Press and hold to edit border color.">
-      {qr}
+    <button className="qr-frame" style={{ borderColor: color }} {...actions} aria-label="Demo QR. Tap to enlarge; hold to change border color">
+      {qr(210)}
     </button>
-    {large && <div className="qr-modal" onClick={() => setLarge(false)} role="dialog" aria-modal="true">
-      <section className="large-qr" style={{ borderColor: frame }} onClick={event => event.stopPropagation()}>
-        {qr}
-        <strong>CLASS PROJECT</strong>
-        <span>NOT VALID FOR TRAVEL</span>
-        <button onClick={() => setLarge(false)}>Close</button>
+    {large && <div className="qr-overlay" role="dialog" aria-modal="true" onClick={() => setLarge(false)}>
+      <section className="large-qr" style={{ borderColor: color }} onClick={event => event.stopPropagation()}>
+        {qr(300)}<strong>DEMO — NOT VALID</strong><button onClick={() => setLarge(false)}>Close</button>
       </section>
     </div>}
   </>;
 }
 
-function Ticket({ ticket, colors, now, activatedAt, editColor, editZone }) {
-  const left = Math.max(0, 60 * 60 - Math.floor((now - activatedAt) / 1000));
-  const minutes = String(Math.floor(left / 60)).padStart(2, "0");
-  const seconds = String(left % 60).padStart(2, "0");
-  const progress = left / 3600 * 100;
+function StripButton({ color, label, onEdit }) {
+  const actions = useLongPress(onEdit, onEdit);
+  return <button className="strip-part" style={{ backgroundColor: color }} {...actions} aria-label={label} />;
+}
 
+function Ticket({ data, colors, remaining, progress, onZone, onColor }) {
+  const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
+  const seconds = String(remaining % 60).padStart(2, "0");
   return <article className="ticket-slide">
-    <section className="real-style-card">
-      <DemoQr frame={colors.frame} onEdit={() => editColor("frame", "QR border")} />
-      <strong className="tap-to-enlarge">Tap to enlarge</strong>
-      <span className="hold-hint">Press and hold the blue border to change its color</span>
-      <div className="dash-line" />
-
+    <section className="ticket-card">
+      <DemoQR color={colors.frame} onEdit={() => onColor("frame", "QR border color")} />
+      <strong className="tap-label">Tap to enlarge</strong>
+      <div className="dash" />
       <h2>INTERSTATE</h2>
-      <button className="zone-button" onClick={() => editZone(ticket.id, ticket.zones)}
-        aria-label={"Current zones " + ticket.zones + ". Tap to change."}>
-        {ticket.zones}
-      </button>
-      <h3>ZONE RIDE</h3>
-      <p>{ticket.passengers}</p>
-      <span className="zone-hint">Tap the number to select zones 1–9</span>
-
-      <div className="ticket-footer">
-        <div className="custom-strip">
-          {["strip1", "strip2", "strip3"].map((key, index) =>
-            <button key={key} className="strip-button"
-              style={{ backgroundColor: colors[key] }}
-              {...useHold(() => editColor(key, "bottom strip " + (index + 1)), () => editColor(key, "bottom strip " + (index + 1)))}
-              aria-label={"Edit bottom strip color " + (index + 1)} />
-          )}
+      <button className="zone-number" onClick={() => onZone(data.zones)}>{data.zones}</button>
+      <h3>ZONE RIDE</h3><p>{data.passengers}</p>
+      <div className="ticket-bottom">
+        <div className="validation-strip">
+          <StripButton color={colors.strip1} label="Edit first strip color" onEdit={() => onColor("strip1", "First strip color")} />
+          <StripButton color={colors.strip2} label="Edit second strip color" onEdit={() => onColor("strip2", "Second strip color")} />
+          <StripButton color={colors.strip3} label="Edit third strip color" onEdit={() => onColor("strip3", "Third strip color")} />
         </div>
-        <span className="hold-hint">Tap or hold a strip section to change its color</span>
-        <div className="time-track"><span style={{ width: progress + "%" }} /></div>
+        <div className="timer-track"><span style={{ width: `${progress}%` }} /></div>
         <strong className="expiry">Expires in {minutes}:{seconds}</strong>
-        <button className="validator-link" onClick={() => alert("Class project demo. No transit validation is available.")}>
-          View Demo Validator Instructions
-        </button>
+        <button className="instructions" onClick={() => alert("Student interface demonstration only. This QR has no fare value and cannot be validated for travel.")}>View Demo Validator Instructions</button>
+        <div className="demo-mark">DEMO · NOT VALID FOR TRAVEL</div>
       </div>
     </section>
   </article>;
@@ -162,50 +103,41 @@ function Ticket({ ticket, colors, now, activatedAt, editColor, editZone }) {
 
 export default function App() {
   const [now, setNow] = useState(Date.now());
-  const [activatedAt] = useState(() => Date.now() - 3 * 60 * 1000);
-  const [tickets, setTickets] = useState(initialTickets);
-  const [colors, setColors] = useState(readColors);
-  const [colorEditor, setColorEditor] = useState(null);
-  const [zoneEditor, setZoneEditor] = useState(null);
+  const [activatedAt] = useState(Date.now);
+  const [colors, setColors] = useState(storedColors);
+  const [selectedZone, setSelectedZone] = useState(1);
+  const [zoneSheetOpen, setZoneSheetOpen] = useState(false);
+  const [colorSheet, setColorSheet] = useState(null);
+  const carousel = useRef(null);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(timer);
-  }, []);
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(id); }, []);
+  useEffect(() => localStorage.setItem("demoTicketColors", JSON.stringify(colors)), [colors]);
 
-  useEffect(() => {
-    localStorage.setItem("ticketDemoColors", JSON.stringify(colors));
-  }, [colors]);
+  const remaining = Math.max(0, 3600 - Math.floor((now - activatedAt) / 1000));
+  const progress = Math.max(0, Math.min(100, (3600 - remaining) / 36));
 
-  function changeZone(zone) {
-    setTickets(current => current.map(ticket =>
-      ticket.id === zoneEditor.ticketId ? { ...ticket, zones: zone } : ticket
-    ));
+  function chooseZone(zone) {
+    setSelectedZone(zone);
+    requestAnimationFrame(() => carousel.current?.children[zone - 1]?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" }));
   }
 
-  return <main className="ticket-app">
-    <div className="phone-status">
-      <strong>{new Date(now).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</strong>
-      <span>CLASS DEMO</span>
-      <strong>91%</strong>
+  function syncZone() {
+    const width = carousel.current?.clientWidth || 1;
+    setSelectedZone(Math.min(9, Math.max(1, Math.round(carousel.current.scrollLeft / width) + 1)));
+  }
+
+  return <main className="app-shell">
+    <header><h1>One Way Ticket</h1></header>
+    <div className="carousel" ref={carousel} onScroll={syncZone} aria-label="Demo tickets, swipe horizontally">
+      {tickets.map(ticket => <Ticket key={ticket.id} data={ticket} colors={colors} remaining={remaining}
+        progress={progress} onZone={() => setZoneSheetOpen(true)} onColor={(key, name) => setColorSheet({ key, name })} />)}
     </div>
-    <h1>One Way Ticket</h1>
-
-    <div className="ticket-carousel" aria-label="Sample tickets">
-      {tickets.map(ticket =>
-        <Ticket key={ticket.id} ticket={ticket} colors={colors} now={now} activatedAt={activatedAt}
-          editColor={(key, label) => setColorEditor({ key, label })}
-          editZone={(ticketId, value) => setZoneEditor({ ticketId, value })} />
-      )}
-    </div>
-
-    <div className="swipe-note">Swipe for another sample ticket</div>
-    <div className="permanent-demo">DEMO · NOT VALID FOR TRAVEL</div>
-
-    {colorEditor && <ColorEditor label={colorEditor.label} value={colors[colorEditor.key]}
-      onChange={value => setColors(current => ({ ...current, [colorEditor.key]: value }))}
-      onClose={() => setColorEditor(null)} />}
-    {zoneEditor && <ZoneEditor value={zoneEditor.value} onChange={changeZone}
-      onClose={() => setZoneEditor(null)} />}
+    <nav className="dots" aria-label="Ticket pages">{tickets.map(ticket => <button key={ticket.id}
+      className={selectedZone === ticket.zones ? "active" : ""} aria-label={`Go to zone ${ticket.zones}`}
+      onClick={() => chooseZone(ticket.zones)} />)}</nav>
+    <p className="swipe-hint">Swipe left or right to change zones</p>
+    {zoneSheetOpen && <ZoneSheet active={selectedZone} onChoose={zone => { chooseZone(zone); setZoneSheetOpen(false); }} onClose={() => setZoneSheetOpen(false)} />}
+    {colorSheet && <ColorSheet name={colorSheet.name} value={colors[colorSheet.key]}
+      onChange={value => setColors(current => ({ ...current, [colorSheet.key]: value }))} onClose={() => setColorSheet(null)} />}
   </main>;
 }
