@@ -23,7 +23,7 @@ function useLongPress(onLongPress, onClick) {
 }
 
 function ColorSheet({ name, value, onChange, onClose }) {
-  const presets = ["#309832", "#086cf2", "#ff3341", "#ffb000", "#6f42c1", "#111111", "#ffffff"];
+  const presets = ["#309832", "#086cf2", "#7b3fc6", "#ffb6c1", "#ff3341", "#808080"];
   return <div className="overlay" role="dialog" aria-modal="true">
     <section className="sheet">
       <div className="sheet-head"><h2>{name}</h2><button onClick={onClose}>Done</button></div>
@@ -58,7 +58,7 @@ function StripButton({ color, label, onEdit }) {
   return <button className="strip-part" style={{ backgroundColor: color }} {...actions} aria-label={label} />;
 }
 
-function Ticket({ zone, colors, remaining, progress, onZone, onColor }) {
+function Ticket({ zone, adults, colors, remaining, progress, onZone, onAdults, onColor }) {
   const minutes = String(Math.floor(remaining / 60)).padStart(2, "0");
   const seconds = String(remaining % 60).padStart(2, "0");
   return <article className="ticket-slide">
@@ -68,7 +68,10 @@ function Ticket({ zone, colors, remaining, progress, onZone, onColor }) {
       <div className="dash" />
       <h2>INTERSTATE</h2>
       <button className="zone-number" onClick={onZone} aria-label={`Zone ${zone}. Tap for next zone`}>{zone}</button>
-      <h3>ZONE RIDE</h3><p>1 Adult</p>
+      <h3>ZONE RIDE</h3>
+      <button className="adult-count" onClick={onAdults} aria-label={`${adults} ${adults === 1 ? "Adult" : "Adults"}. Tap for next passenger count`}>
+        {adults} {adults === 1 ? "Adult" : "Adults"}
+      </button>
       <div className="ticket-bottom">
         <div className="validation-strip">
           <StripButton color={colors.strip1} label="Edit first strip color" onEdit={() => onColor("strip1", "First strip color")} />
@@ -88,6 +91,7 @@ export default function App() {
   const [activatedAt] = useState(Date.now);
   const [colors, setColors] = useState(storedColors);
   const [selectedZone, setSelectedZone] = useState(1);
+  const [adults, setAdults] = useState(1);
   const [colorSheet, setColorSheet] = useState(null);
 
   useEffect(() => { const id = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(id); }, []);
@@ -97,12 +101,13 @@ export default function App() {
   const progress = Math.max(0, Math.min(100, (3600 - remaining) / 36));
 
   function nextZone() { setSelectedZone(zone => zone === 9 ? 1 : zone + 1); }
+  function nextAdults() { setAdults(count => count === 7 ? 1 : count + 1); }
 
   return <main className="app-shell">
     <header><h1>One Way Ticket</h1></header>
     <div className="ticket-stage">
-      <Ticket zone={selectedZone} colors={colors} remaining={remaining} progress={progress}
-        onZone={nextZone} onColor={(key, name) => setColorSheet({ key, name })} />
+      <Ticket zone={selectedZone} adults={adults} colors={colors} remaining={remaining} progress={progress}
+        onZone={nextZone} onAdults={nextAdults} onColor={(key, name) => setColorSheet({ key, name })} />
     </div>
     {colorSheet && <ColorSheet name={colorSheet.name} value={colors[colorSheet.key]}
       onChange={value => setColors(current => ({ ...current, [colorSheet.key]: value }))} onClose={() => setColorSheet(null)} />}
