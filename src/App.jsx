@@ -44,6 +44,7 @@ function DemoQR({ color, onEdit }) {
     <button className="qr-frame" style={{ borderColor: color }} {...actions} aria-label="Demo QR. Tap to enlarge; hold to change border color">
       {qr(210)}
     </button>
+    <div className="qr-demo-mark">DEMO · NOT VALID FOR TRAVEL</div>
     {large && <div className="qr-overlay" role="dialog" aria-modal="true" onClick={() => setLarge(false)}>
       <section className="large-qr" style={{ borderColor: color }} onClick={event => event.stopPropagation()}>
         {qr(300)}<strong>DEMO — NOT VALID FOR TRAVEL</strong><button onClick={() => setLarge(false)}>Close</button>
