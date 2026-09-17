@@ -7,13 +7,13 @@ button { cursor: pointer; }
 .app-shell { position: relative; width: 100%; max-width: 480px; min-height: 100dvh; margin: auto; overflow: hidden; text-align: center; background: linear-gradient(#2189d4 0 39%, #e7e8ec 39%); }
 header { height: 105px; padding: max(24px, env(safe-area-inset-top)) 16px 0; color: white; }
 header h1 { margin: 8px 0 0; font-size: 21px; font-weight: 700; }
-.carousel { display: flex; width: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; overscroll-behavior-inline: contain; scrollbar-width: none; touch-action: pan-x pan-y; }
-.carousel::-webkit-scrollbar { display: none; }
-.ticket-slide { min-width: 100%; padding: 0 27px; scroll-snap-align: center; scroll-snap-stop: always; }
+.ticket-stage { width: 100%; }
+.ticket-slide { width: 100%; padding: 0 27px; }
 .ticket-card { position: relative; min-height: calc(100dvh - 150px); padding: 23px 28px 18px; border-radius: 22px; background: white; box-shadow: 0 12px 25px #18253825; }
 .qr-frame { display: block; width: min(225px, 76vw); aspect-ratio: 1; margin: 0 auto 6px; padding: 7px; border: 12px solid; border-radius: 6px; background: white; touch-action: none; }
 .qr-frame svg { display: block; width: 100%; height: 100%; }
 .tap-label { display: block; font-size: 12px; }
+.qr-demo-mark { margin-top: 3px; color: #a22828; font-size: 9px; font-weight: 800; letter-spacing: .6px; }
 .dash { margin: 8px 0 27px; border-top: 2px dashed #c8c8c8; }
 .ticket-card h2 { margin: 0; color: #ff3341; font-size: 29px; line-height: 1.1; }
 .zone-number { display: block; margin: 5px auto 0; padding: 0 13px; border: 0; border-radius: 8px; background: transparent; font-size: 36px; font-weight: 500; line-height: 1; }
@@ -26,11 +26,6 @@ header h1 { margin: 8px 0 0; font-size: 21px; font-weight: 700; }
 .timer-track span { display: block; height: 100%; min-width: 5px; border-radius: inherit; background: #0782ff; transition: width .25s linear; }
 .expiry { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
 .instructions { padding: 0; border: 0; background: transparent; text-decoration: underline; font-size: 11px; }
-.demo-mark { margin-top: 6px; color: #a22828; font-size: 9px; font-weight: 800; letter-spacing: .65px; }
-.dots { height: 19px; display: flex; justify-content: center; align-items: end; gap: 5px; }
-.dots button { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 50%; background: #a6aab1; }
-.dots button.active { width: 17px; border-radius: 4px; background: #2189d4; }
-.swipe-hint { margin: 5px 0 calc(8px + env(safe-area-inset-bottom)); color: #6f737a; font-size: 10px; }
 .overlay, .qr-overlay { position: fixed; inset: 0; z-index: 20; display: grid; place-items: end center; padding: 18px; background: #0009; }
 .sheet { width: min(100%, 430px); padding: 22px; border-radius: 20px; background: white; box-shadow: 0 16px 50px #0005; }
 .sheet-head { display: flex; justify-content: space-between; align-items: center; }
