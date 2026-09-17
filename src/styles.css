@@ -4,7 +4,9 @@ html, body, #root { min-height: 100%; }
 body { margin: 0; overscroll-behavior: none; }
 button, input { font: inherit; }
 button { cursor: pointer; }
-.app-shell { position: relative; width: 100%; max-width: 480px; min-height: 100dvh; margin: auto; overflow: hidden; text-align: center; background: linear-gradient(#2189d4 0 39%, #e7e8ec 39%); }
+.app-shell { position: relative; width: 100%; max-width: 480px; min-height: 100dvh; margin: auto; overflow: hidden; text-align: center; background: #e7e8ec; }
+.app-shell::before { content: ""; position: absolute; z-index: 0; top: 0; right: 0; left: 0; height: 39%; border-radius: 0 0 28px 28px; background: #2189d4; }
+header, .ticket-stage { position: relative; z-index: 1; }
 header { height: 105px; padding: max(24px, env(safe-area-inset-top)) 16px 0; color: white; }
 header h1 { margin: 8px 0 0; font-size: 21px; font-weight: 700; }
 .ticket-stage { width: 100%; }
