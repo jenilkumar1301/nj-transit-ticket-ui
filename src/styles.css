@@ -12,7 +12,7 @@ header h1 { margin: 0; font-size: 21px; font-weight: 700; }
 .ticket-stage { width: 100%; }
 .ticket-slide { width: 100%; padding: 0 27px; }
 .ticket-card { position: relative; min-height: calc(100dvh - 107px); padding: 23px 28px 18px; border-radius: 22px; background: white; box-shadow: 0 12px 25px #18253825; }
-.qr-frame { display: grid; place-items: center; width: min(225px, 76vw); aspect-ratio: 1; margin: 0 auto 6px; padding: 10px; overflow: hidden; border: 12px solid; border-radius: 6px; background: white; appearance: none; -webkit-appearance: none; line-height: 0; touch-action: none; }
+.qr-frame { display: grid; place-items: center; width: min(225px, 76vw); aspect-ratio: 1; margin: 0 auto 6px; padding: 10px; overflow: hidden; border: 14px solid; border-radius: 6px; background: white; appearance: none; -webkit-appearance: none; line-height: 0; touch-action: none; }
 .qr-frame svg { display: block; width: 100%; height: auto; aspect-ratio: 1; }
 .tap-label { display: block; font-size: 12px; }
 .qr-demo-mark { margin-top: 5px; color: #a22828; font-size: 9px; font-weight: 800; letter-spacing: .6px; }
@@ -48,5 +48,5 @@ header h1 { margin: 0; font-size: 21px; font-weight: 700; }
 .large-qr button { padding: 9px 22px; border: 0; border-radius: 8px; color: white; background: #2189d4; }
 button:focus-visible { outline: 3px solid #ffc928; outline-offset: 3px; }
 @media (min-width: 600px) { body { padding: 20px 0; background: #e7e8ec; } .app-shell { min-height: calc(100dvh - 40px); border-radius: 25px; box-shadow: 0 10px 38px #1c26322c; } .ticket-card { min-height: calc(100dvh - 190px); } }
-@media (max-height: 720px) { header { height: 74px; padding-top: 12px; } header h1 { margin-top: 0; } .ticket-card { min-height: calc(100dvh - 118px); padding-top: 13px; } .qr-frame { width: min(185px, 61vw); border-width: 9px; } .dash { margin-bottom: 13px; } .ticket-card h2 { font-size: 25px; } .ticket-bottom { bottom: 10px; } .timer-track { margin-top: 14px; } }
+@media (max-height: 720px) { header { height: 74px; padding-top: 12px; } header h1 { margin-top: 0; } .ticket-card { min-height: calc(100dvh - 118px); padding-top: 13px; } .qr-frame { width: min(185px, 61vw); border-width: 10px; } .dash { margin-bottom: 13px; } .ticket-card h2 { font-size: 25px; } .ticket-bottom { bottom: 10px; } .timer-track { margin-top: 14px; } }
 @media (max-width: 360px) { .ticket-slide { padding-inline: 15px; } .ticket-card { padding-inline: 20px; } .ticket-bottom { right: 20px; left: 20px; } }
