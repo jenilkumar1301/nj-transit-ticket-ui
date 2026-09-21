@@ -39,11 +39,12 @@ function DemoQR({ color, onEdit }) {
   const [large, setLarge] = useState(false);
   const actions = useLongPress(onEdit, () => setLarge(true));
   const value = "STUDENT UI DEMO | NOT VALID FOR TRAVEL | NO FARE VALUE | VALIDATOR: REJECT | DEMO-2026";
-  const qr = size => <QRCodeSVG value={value} size={size} level="H" marginSize={1} title="Non-valid demo QR" />;
+  const qr = size => <QRCodeSVG value={value} size={size} level="H" marginSize={0} title="Non-valid demo QR" />;
   return <>
     <button className="qr-frame" style={{ borderColor: color }} {...actions} aria-label="Demo QR. Tap to enlarge; hold to change border color">
       {qr(210)}
     </button>
+    <div className="qr-demo-mark">DEMO · NOT VALID FOR TRAVEL</div>
     {large && <div className="qr-overlay" role="dialog" aria-modal="true" onClick={() => setLarge(false)}>
       <section className="large-qr" style={{ borderColor: color }} onClick={event => event.stopPropagation()}>
         {qr(300)}<strong>DEMO — NOT VALID FOR TRAVEL</strong><button onClick={() => setLarge(false)}>Close</button>
